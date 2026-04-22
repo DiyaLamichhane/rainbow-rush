@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🌈 RAINBOW RUSH - Progressive Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Poppins', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background bubbles */
+        .bubble {
+            position: fixed;
+            bottom: -100px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatUp 8s infinite;
+            z-index: 0;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.5;
+            }
+            90% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-120vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .main-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-container {
+            flex: 2;
+            min-width: 320px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+
+        .leaderboard-container {
+            flex: 1;
+            min-width: 280px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2, #ff6b6b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .score-card {
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            padding: 12px 18px;
+            border-radius: 20px;
+            flex: 1;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .score-card span {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .difficulty-indicator {
+            text-align: center;
+            margin: 10px 0;
+            padding: 8px;
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .difficulty-level {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: #4CAF50;
+            color: white;
+            font-size: 14px;
+        }
+
+        .game-area {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            background: linear-gradient(180deg, #e8ecf1 0%, #d4d9e4 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                height: 380px;
+            }
+        }
+
+        .falling-block {
+            position: absolute;
+            width: 55px;
+            height: 55px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.05s;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .falling-block:active {
+            transform: scale(0.92);
+        }
+
+        .color-panel {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .color-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 3px solid white;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .color-btn:active {
+            transform: scale(0.92);
+        }
+
+        @media (max-width: 768px) {
+            .color-btn {
+                width: 55px;
+                height: 55px;
+                font-size: 24px;
+            }
+        }
+
+        .game-controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .combo-display {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #ff6b6b;
+        }
+
+        .powerup-active {
+            text-align: center;
+            padding: 8px;
+            background: linear-gradient(135deg, #ffd700, #ffed4a);
+            border-radius: 20px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .leaderboard-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .leaderboard-list {
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            background: linear-gradient(135deg, #f5f7fa, #e8ecf1);
+            border-radius: 15px;
+        }
+
+        .leaderboard-item.top-1 {
+            background: linear-gradient(135deg, #ffd700, #ffed4a);
+        }
+
+        .leaderboard-item.top-2 {
+            background: #c0c0c0;
+        }
+
+        .leaderboard-item.top-3 {
+            background: #cd7f32;
+        }
+
+        .rank {
+            font-weight: bold;
+            width: 50px;
+            font-size: 20px;
+        }
+
+        .player-name {
+            flex: 1;
+            margin: 0 12px;
+        }
+
+        .player-score {
+            font-weight: bold;
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        .name-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .name-modal-content {
+            background: white;
+            padding: 35px;
+            border-radius: 30px;
+            text-align: center;
+            width: 350px;
+        }
+
+        .name-modal-content h3 {
+            font-size: 28px;
+            color: #667eea;
+        }
+
+        .name-modal input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 16px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .speed-warning {
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🌈 RAINBOW RUSH</h1>
+            <p>⚡ It starts easy... but don't get comfortable! ⚡</p>
+        </div>
+
+        <div class="score-board">
+            <div class="score-card">
+                <label>🎯 SCORE</label>
+                <span id="score">0</span>
+            </div>
+            <div class="score-card">
+                <label>🏆 BEST</label>
+                <span id="bestScore">0</span>
+            </div>
+            <div class="score-card">
+                <label>💔 MISSES</label>
+                <span id="misses">0</span>
+                <span style="font-size: 14px;">/10</span>
+            </div>
+        </div>
+
+        <div class="difficulty-indicator" id="difficultyIndicator">
+            🌟 Level: <span id="level" class="difficulty-level">EASY</span>
+            &nbsp;|&nbsp;
+            ⚡ Speed: <span id="speedDisplay">1.0</span>
+        </div>
+
+        <div class="combo-display" id="comboDisplay"></div>
+        <div class="powerup-active hidden" id="powerupDisplay"></div>
+
+        <div class="game-area" id="gameArea">
+            <div id="fallingBlocks"></div>
+        </div>
+
+        <div class="color-panel" id="colorPanel">
+            <div class="color-btn" style="background: #FF4444;" data-color="red">🔴</div>
+            <div class="color-btn" style="background: #44FF44;" data-color="green">🟢</div>
+            <div class="color-btn" style="background: #4444FF;" data-color="blue">🔵</div>
+            <div class="color-btn" style="background: #FFFF44;" data-color="yellow">🟡</div>
+            <div class="color-btn" style="background: #FF44FF;" data-color="purple">🟣</div>
+        </div>
+
+        <div class="game-controls">
+            <button class="btn" id="startBtn">🎮 START GAME</button>
+        </div>
+    </div>
+
+    <div class="leaderboard-container">
+        <div class="leaderboard-header">
+            <h2>🏆 TOP PLAYERS</h2>
+        </div>
+        <div class="leaderboard-list" id="leaderboardList">
+            <div style="text-align: center; padding: 20px;">✨ No scores yet ✨</div>
+        </div>
+        <div style="text-align: center; margin-top: 15px;">
+            <button class="btn" id="refreshBtn" style="padding: 8px 20px; font-size: 14px;">🔄 Refresh</button>
+        </div>
+    </div>
+</div>
+
+<div id="nameModal" class="name-modal hidden">
+    <div class="name-modal-content">
+        <h3>🏆 NEW BEST!</h3>
+        <p style="font-size: 36px;">🎉</p>
+        <p>Score: <strong id="finalScore">0</strong></p>
+        <input type="text" id="playerName" maxlength="15" placeholder="Your name">
+        <button class="btn" id="submitScoreBtn">SAVE</button>
+    </div>
+</div>
+
+<script>
+    const colorList = ['red', 'green', 'blue', 'yellow', 'purple'];
+    const colorMap = {
+        red: '#FF4444',
+        green: '#44FF44',
+        blue: '#4444FF',
+        yellow: '#FFFF44',
+        purple: '#FF44FF'
+    };
+
+    // Game state
+    let score = 0;
+    let misses = 0;
+    let bestScore = localStorage.getItem('rainbowBestScore') || 0;
+    let gameRunning = false;
+    let gameLoop = null;
+    let blocks = [];
+    let combo = 0;
+    let multiplier = 1;
+    let powerUpActive = null;
+    let powerUpTimer = null;
+    let animationId = null;
+    
+    // Progressive speed variables
+    let baseSpeed = 1.2;      // Starts SLOW
+    let currentSpeed = 1.2;
+    let spawnRate = 1200;      // Starts with fewer blocks
+    let speedLevel = 1;
+    let speedMilestones = [0, 100, 250, 450, 700, 1000, 1500, 2000];
+    let speedValues = [1.2, 1.8, 2.5, 3.2, 4.0, 4.8, 5.5, 6.5];
+    let levelNames = ['EASY', 'NORMAL', 'MEDIUM', 'FAST', 'RAPID', 'INSANE', 'LUDICROUS', 'IMPOSSIBLE'];
+
+    let gameArea, fallingBlocksContainer;
+
+    document.getElementById('bestScore').innerText = bestScore;
+
+    function updateDifficulty() {
+        // Find current level based on score
+        for (let i = speedMilestones.length - 1; i >= 0; i--) {
+            if (score >= speedMilestones[i]) {
+                speedLevel = i;
+                break;
+            }
+        }
+        
+        currentSpeed = speedValues[speedLevel];
+        
+        // Update display
+        document.getElementById('level').innerText = levelNames[speedLevel];
+        document.getElementById('speedDisplay').innerText = currentSpeed.toFixed(1);
+        
+        // Add visual warning when speed increases
+        const indicator = document.getElementById('difficultyIndicator');
+        indicator.classList.add('speed-warning');
+        setTimeout(() => indicator.classList.remove('speed-warning'), 500);
+        
+        // Show toast on major speed increases
+        if (speedLevel > 0 && score >= speedMilestones[speedLevel] && score < speedMilestones[speedLevel] + 50) {
+            showToast(`⚠️ SPEED INCREASED! Now: ${levelNames[speedLevel]} ⚠️`);
+        }
+        
+        // Update spawn rate based on speed
+        if (currentSpeed < 2) spawnRate = 1200;
+        else if (currentSpeed < 3) spawnRate = 1000;
+        else if (currentSpeed < 4) spawnRate = 850;
+        else if (currentSpeed < 5) spawnRate = 700;
+        else spawnRate = 600;
+        
+        // Update game loop if running
+        if (gameRunning) {
+            if (gameLoop) clearInterval(gameLoop);
+            gameLoop = setInterval(() => {
+                if (gameRunning) spawnBlock();
+            }, spawnRate);
+        }
+    }
+
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerText = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+    }
+
+    function updateCombo() {
+        if (combo >= 10) multiplier = 5;
+        else if (combo >= 7) multiplier = 4;
+        else if (combo >= 5) multiplier = 3;
+        else if (combo >= 3) multiplier = 2;
+        else multiplier = 1;
+
+        const comboDisplay = document.getElementById('comboDisplay');
+        if (combo >= 3) {
+            comboDisplay.innerHTML = `🔥 ${combo} COMBO! x${multiplier} 🔥`;
+        } else {
+            comboDisplay.innerHTML = '';
+        }
+    }
+
+    function activatePowerUp(type) {
+        powerUpActive = type;
+        const powerupDisplay = document.getElementById('powerupDisplay');
+        powerupDisplay.classList.remove('hidden');
+        
+        switch(type) {
+            case 'lightning':
+                powerupDisplay.innerHTML = '⚡ LIGHTNING POWER! ⚡';
+                break;
+            case 'freeze':
+                powerupDisplay.innerHTML = '❄️ FREEZE! ❄️';
+                currentSpeed = Math.max(0.5, currentSpeed - 1);
+                break;
+            case 'magnet':
+                powerupDisplay.innerHTML = '🎯 MAGNET POWER! 🎯';
+                break;
+        }
+        
+        if (powerUpTimer) clearTimeout(powerUpTimer);
+        powerUpTimer = setTimeout(() => {
+            powerUpActive = null;
+            powerupDisplay.classList.add('hidden');
+            if (type === 'freeze') updateDifficulty();
+        }, 5000);
+    }
+
+    function spawnBlock() {
+        if (!gameRunning) return;
+        
+        const randomColor = colorList[Math.floor(Math.random() * colorList.length)];
+        const isPowerUp = Math.random() < 0.1;
+        
+        const block = {
+            id: Date.now() + Math.random(),
+            color: randomColor,
+            isPowerUp: isPowerUp,
+            powerUpType: isPowerUp ? ['lightning', 'freeze', 'magnet'][Math.floor(Math.random() * 3)] : null,
+            x: Math.random() * (gameArea.offsetWidth - 55),
+            y: 0,
+            element: null
+        };
+
+        const div = document.createElement('div');
+        div.className = 'falling-block';
+        div.style.backgroundColor = colorMap[randomColor];
+        div.style.left = block.x + 'px';
+        div.style.top = block.y + 'px';
+        
+        if (block.isPowerUp) {
+            div.style.border = '3px solid gold';
+            div.style.boxShadow = '0 0 15px gold';
+            div.innerHTML = block.powerUpType === 'lightning' ? '⚡' : block.powerUpType === 'freeze' ? '❄️' : '🎯';
+        }
+        
+        div.onclick = (e) => {
+            e.stopPropagation();
+            if (!gameRunning) return;
+            
+            if (block.isPowerUp) {
+                activatePowerUp(block.powerUpType);
+                div.remove();
+                blocks = blocks.filter(b => b.id !== block.id);
+                showToast(`✨ ${block.powerUpType.toUpperCase()} POWER-UP! ✨`);
+                return;
+            }
+            
+            if (powerUpActive === 'lightning') {
+                blocks.forEach(b => {
+                    if (b.color === block.color) {
+                        b.element?.remove();
+                    }
+                });
+                blocks = blocks.filter(b => b.color !== block.color);
+                const points = 50 * multiplier;
+                score += points;
+                showToast(`⚡ +${points} LIGHTNING! ⚡`);
+                powerUpActive = null;
+                document.getElementById('powerupDisplay').classList.add('hidden');
+            } else if (powerUpActive === 'magnet') {
+                const points = 15 * multiplier;
+                score += points;
+                showToast(`🎯 +${points} MAGNET! 🎯`);
+                powerUpActive = null;
+                document.getElementById('powerupDisplay').classList.add('hidden');
+            } else {
+                const points = 10 * multiplier;
+                score += points;
+                combo++;
+                updateCombo();
+                showToast(`+${points}`);
+            }
+            
+            document.getElementById('score').innerText = score;
+            updateDifficulty(); // Check if speed should increase
+            div.remove();
+            blocks = blocks.filter(b => b.id !== block.id);
+        };
+        
+        gameArea.appendChild(div);
+        block.element = div;
+        blocks.push(block);
+    }
+
+    function updateGame() {
+        if (!gameRunning) return;
+        
+        const toRemove = [];
+        
+        blocks.forEach(block => {
+            block.y += currentSpeed;
+            if (block.element) {
+                block.element.style.top = block.y + 'px';
+            }
+            
+            if (block.y >= gameArea.offsetHeight - 55) {
+                toRemove.push(block);
+            }
+        });
+        
+        toRemove.forEach(block => {
+            if (block.element) block.element.remove();
+            blocks = blocks.filter(b => b.id !== block.id);
+            
+            if (!block.isPowerUp) {
+                misses++;
+                document.getElementById('misses').innerText = misses;
+                combo = 0;
+                updateCombo();
+                showToast('💔 MISS!');
+                
+                if (misses >= 10) {
+                    endGame();
+                }
+            }
+        });
+        
+        animationId = requestAnimationFrame(updateGame);
+    }
+
+    function endGame() {
+        gameRunning = false;
+        if (gameLoop) clearInterval(gameLoop);
+        if (animationId) cancelAnimationFrame(animationId);
+        
+        showToast('💀 GAME OVER! 💀');
+        
+        if (score > bestScore) {
+            bestScore = score;
+            localStorage.setItem('rainbowBestScore', bestScore);
+            document.getElementById('bestScore').innerText = bestScore;
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('nameModal').classList.remove('hidden');
+        } else {
+            alert(`Game Over!\nScore: ${score}\nBest: ${bestScore}`);
+            resetGame();
+        }
+    }
+
+    function saveScoreToLocal(playerName, score) {
+        let scores = JSON.parse(localStorage.getItem('rainbowScores') || '[]');
+        scores.push({ name: playerName, score: score, date: new Date().toISOString() });
+        scores.sort((a, b) => b.score - a.score);
+        scores = scores.slice(0, 10);
+        localStorage.setItem('rainbowScores', JSON.stringify(scores));
+        loadLeaderboard();
+    }
+
+    function loadLeaderboard() {
+        const scores = JSON.parse(localStorage.getItem('rainbowScores') || '[]');
+        const leaderboardList = document.getElementById('leaderboardList');
+        
+        if (scores.length === 0) {
+            leaderboardList.innerHTML = '<div style="text-align: center; padding: 20px;">✨ No scores yet ✨</div>';
+            return;
+        }
+        
+        leaderboardList.innerHTML = scores.map((score, index) => {
+            let rankIcon = index === 0 ? '👑' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}`;
+            let rankClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
+            return `
+                <div class="leaderboard-item ${rankClass}">
+                    <div class="rank">${rankIcon}</div>
+                    <div class="player-name">${escapeHtml(score.name)}</div>
+                    <div class="player-score">${score.score}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function resetGame() {
+        blocks.forEach(block => block.element?.remove());
+        blocks = [];
+        score = 0;
+        misses = 0;
+        combo = 0;
+        multiplier = 1;
+        speedLevel = 1;
+        currentSpeed = speedValues[0];
+        
+        document.getElementById('score').innerText = '0';
+        document.getElementById('misses').innerText = '0';
+        document.getElementById('comboDisplay').innerHTML = '';
+        document.getElementById('powerupDisplay').classList.add('hidden');
+        updateDifficulty();
+        
+        if (powerUpTimer) clearTimeout(powerUpTimer);
+    }
+
+    function startGame() {
+        resetGame();
+        gameRunning = true;
+        
+        if (gameLoop) clearInterval(gameLoop);
+        gameLoop = setInterval(() => {
+            if (gameRunning) spawnBlock();
+        }, spawnRate);
+        
+        animationId = requestAnimationFrame(updateGame);
+    }
+
+    // Create bubbles
+    for (let i = 0; i < 20; i++) {
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.style.width = Math.random() * 100 + 50 + 'px';
+        bubble.style.height = bubble.style.width;
+        bubble.style.left = Math.random() * 100 + '%';
+        bubble.style.animationDuration = Math.random() * 5 + 5 + 's';
+        bubble.style.animationDelay = Math.random() * 5 + 's';
+        document.body.appendChild(bubble);
+    }
+
+    document.getElementById('startBtn').onclick = startGame;
+    document.getElementById('refreshBtn').onclick = loadLeaderboard;
+    document.getElementById('submitScoreBtn').onclick = () => {
+        const playerName = document.getElementById('playerName').value.trim();
+        if (playerName) {
+            saveScoreToLocal(playerName, score);
+            document.getElementById('nameModal').classList.add('hidden');
+            resetGame();
+        } else {
+            alert('Enter your name!');
+        }
+    };
+
+    gameArea = document.getElementById('gameArea');
+    loadLeaderboard();
+    updateDifficulty();
+</script>
+</body>
+</html>
