@@ -22,6 +22,101 @@
             overflow-x: hidden;
         }
 
+        /* Tutorial Modal Styles */
+        .tutorial-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tutorial-content {
+            background: white;
+            padding: 30px;
+            border-radius: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: bounceIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.02); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .tutorial-content h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .tutorial-step {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f2f5;
+            border-radius: 15px;
+        }
+
+        .tutorial-step .example {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .example-block {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .example-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .understand-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
         /* Animated background bubbles */
         .bubble {
             position: fixed;
@@ -378,6 +473,55 @@
 </head>
 <body>
 
+<!-- TUTORIAL MODAL -->
+<div id="tutorialModal" class="tutorial-modal">
+    <div class="tutorial-content">
+        <h2>🎮 HOW TO PLAY</h2>
+        
+        <div class="tutorial-step">
+            <p><strong>1️⃣ Watch the falling blocks</strong></p>
+            <div class="example">
+                <div class="example-block" style="background:#FF4444;">🔴</div>
+                <div class="example-block" style="background:#44FF44;">🟢</div>
+                <div class="example-block" style="background:#4444FF;">🔵</div>
+            </div>
+            <p style="margin-top:10px;">Blocks fall from the top!</p>
+        </div>
+
+        <div class="tutorial-step">
+            <p><strong>2️⃣ Click the matching color button BELOW</strong></p>
+            <div class="example">
+                <div class="example-button" style="background:#FF4444;">🔴<br>RED</div>
+                <div class="example-button" style="background:#44FF44;">🟢<br>GREEN</div>
+                <div class="example-button" style="background:#4444FF;">🔵<br>BLUE</div>
+            </div>
+            <p style="margin-top:10px;">Match the falling block color!</p>
+        </div>
+
+        <div class="tutorial-step">
+            <p><strong>3️⃣ Score Points!</strong></p>
+            <p>✅ Match correctly = <strong>+10 points</strong></p>
+            <p>❌ Miss 10 blocks = <strong>Game Over</strong></p>
+            <p>🔥 Combo = <strong>Bonus points!</strong></p>
+        </div>
+
+        <div class="tutorial-step">
+            <p><strong>⚡ POWER-UPS (Gold Blocks):</strong></p>
+            <p>⚡ <strong>Lightning</strong> - Destroy all same color blocks</p>
+            <p>❄️ <strong>Freeze</strong> - Slow down all blocks</p>
+            <p>🎯 <strong>Magnet</strong> - Auto-catch next 3 blocks</p>
+        </div>
+
+        <div class="tutorial-step">
+            <p><strong>📈 Progressive Difficulty!</strong></p>
+            <p>The game starts EASY... but gets FASTER as your score increases!</p>
+            <p>How high can you go?</p>
+        </div>
+
+        <button class="understand-btn" id="understandBtn">✅ I UNDERSTAND! LET'S PLAY</button>
+    </div>
+</div>
+
 <div class="main-container">
     <div class="game-container">
         <div class="game-header">
@@ -432,7 +576,7 @@
             <h2>🏆 TOP PLAYERS</h2>
         </div>
         <div class="leaderboard-list" id="leaderboardList">
-            <div style="text-align: center; padding: 20px;">✨ No scores yet ✨</div>
+            <div style="text-align: center; padding: 20px;">✨ No scores yet. Play and be the first! ✨</div>
         </div>
         <div style="text-align: center; margin-top: 15px;">
             <button class="btn" id="refreshBtn" style="padding: 8px 20px; font-size: 14px;">🔄 Refresh</button>
@@ -451,6 +595,13 @@
 </div>
 
 <script>
+    // CLEAR OLD TEST DATA ON FIRST LOAD
+    // This ensures leaderboard starts empty
+    if (!localStorage.getItem('rainbowScoresCleared')) {
+        localStorage.removeItem('rainbowScores');
+        localStorage.setItem('rainbowScoresCleared', 'true');
+    }
+
     const colorList = ['red', 'green', 'blue', 'yellow', 'purple'];
     const colorMap = {
         red: '#FF4444',
@@ -474,20 +625,18 @@
     let animationId = null;
     
     // Progressive speed variables
-    let baseSpeed = 1.2;      // Starts SLOW
     let currentSpeed = 1.2;
-    let spawnRate = 1200;      // Starts with fewer blocks
-    let speedLevel = 1;
+    let spawnRate = 1200;
+    let speedLevel = 0;
     let speedMilestones = [0, 100, 250, 450, 700, 1000, 1500, 2000];
     let speedValues = [1.2, 1.8, 2.5, 3.2, 4.0, 4.8, 5.5, 6.5];
     let levelNames = ['EASY', 'NORMAL', 'MEDIUM', 'FAST', 'RAPID', 'INSANE', 'LUDICROUS', 'IMPOSSIBLE'];
 
-    let gameArea, fallingBlocksContainer;
+    let gameArea;
 
     document.getElementById('bestScore').innerText = bestScore;
 
     function updateDifficulty() {
-        // Find current level based on score
         for (let i = speedMilestones.length - 1; i >= 0; i--) {
             if (score >= speedMilestones[i]) {
                 speedLevel = i;
@@ -497,28 +646,23 @@
         
         currentSpeed = speedValues[speedLevel];
         
-        // Update display
         document.getElementById('level').innerText = levelNames[speedLevel];
         document.getElementById('speedDisplay').innerText = currentSpeed.toFixed(1);
         
-        // Add visual warning when speed increases
         const indicator = document.getElementById('difficultyIndicator');
         indicator.classList.add('speed-warning');
         setTimeout(() => indicator.classList.remove('speed-warning'), 500);
         
-        // Show toast on major speed increases
         if (speedLevel > 0 && score >= speedMilestones[speedLevel] && score < speedMilestones[speedLevel] + 50) {
             showToast(`⚠️ SPEED INCREASED! Now: ${levelNames[speedLevel]} ⚠️`);
         }
         
-        // Update spawn rate based on speed
         if (currentSpeed < 2) spawnRate = 1200;
         else if (currentSpeed < 3) spawnRate = 1000;
         else if (currentSpeed < 4) spawnRate = 850;
         else if (currentSpeed < 5) spawnRate = 700;
         else spawnRate = 600;
         
-        // Update game loop if running
         if (gameRunning) {
             if (gameLoop) clearInterval(gameLoop);
             gameLoop = setInterval(() => {
@@ -643,7 +787,7 @@
             }
             
             document.getElementById('score').innerText = score;
-            updateDifficulty(); // Check if speed should increase
+            updateDifficulty();
             div.remove();
             blocks = blocks.filter(b => b.id !== block.id);
         };
@@ -708,9 +852,28 @@
         }
     }
 
-    function saveScoreToLocal(playerName, score) {
+    function saveScoreToLocal(playerName, newScore) {
         let scores = JSON.parse(localStorage.getItem('rainbowScores') || '[]');
-        scores.push({ name: playerName, score: score, date: new Date().toISOString() });
+        
+        // Check if player already exists
+        let existingIndex = scores.findIndex(s => s.name.toLowerCase() === playerName.toLowerCase());
+        
+        if (existingIndex !== -1) {
+            // Update existing player's score if new score is higher
+            if (newScore > scores[existingIndex].score) {
+                scores[existingIndex].score = newScore;
+                scores[existingIndex].date = new Date().toISOString();
+                showToast(`✅ ${playerName}'s score updated to ${newScore}!`);
+            } else {
+                showToast(`👋 ${playerName}, your best is still ${scores[existingIndex].score}`);
+            }
+        } else {
+            // Add new player
+            scores.push({ name: playerName, score: newScore, date: new Date().toISOString() });
+            showToast(`🎉 Welcome ${playerName}! Score saved!`);
+        }
+        
+        // Sort and keep top 10
         scores.sort((a, b) => b.score - a.score);
         scores = scores.slice(0, 10);
         localStorage.setItem('rainbowScores', JSON.stringify(scores));
@@ -722,7 +885,7 @@
         const leaderboardList = document.getElementById('leaderboardList');
         
         if (scores.length === 0) {
-            leaderboardList.innerHTML = '<div style="text-align: center; padding: 20px;">✨ No scores yet ✨</div>';
+            leaderboardList.innerHTML = '<div style="text-align: center; padding: 20px;">✨ No scores yet. Play and be the first! ✨</div>';
             return;
         }
         
@@ -752,7 +915,7 @@
         misses = 0;
         combo = 0;
         multiplier = 1;
-        speedLevel = 1;
+        speedLevel = 0;
         currentSpeed = speedValues[0];
         
         document.getElementById('score').innerText = '0';
@@ -787,6 +950,11 @@
         bubble.style.animationDelay = Math.random() * 5 + 's';
         document.body.appendChild(bubble);
     }
+
+    // Tutorial close button
+    document.getElementById('understandBtn').onclick = () => {
+        document.getElementById('tutorialModal').style.display = 'none';
+    };
 
     document.getElementById('startBtn').onclick = startGame;
     document.getElementById('refreshBtn').onclick = loadLeaderboard;
